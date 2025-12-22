@@ -1,0 +1,4 @@
+{
+  "message": "Hello, \"World\"!",
+  "nested": { "a": 1, "b": [true, null] }
+}

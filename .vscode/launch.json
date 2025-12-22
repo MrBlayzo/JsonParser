@@ -1,0 +1,80 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+    {
+      "name": "Debug JsonTest.Read",
+      //"type": "cppvsdbg",          // ← для MSVC
+       "type": "cppdbg",         // ← для MinGW/GCC (раскомментируй эту, закомментируй cppvsdbg)
+      "request": "launch",
+      "program": "${workspaceFolder}/build/tests/json_test.exe",
+      "args": [
+        "--gtest_filter=JsonTest.Read",
+        "--gtest_break_on_failure"   // ← остановится при ASSERT/EXPECT провале
+      ],
+      "cwd": "${workspaceFolder}/build/tests",
+      "environment": [],
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "MIMode": "gdb",              // ← только для cppdbg + MinGW
+      "miDebuggerPath": "C:/mingw64/bin/gdb.exe",  // ← путь к gdb (если MinGW)
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "name": "Debug JsonTest.ReadEmptyList",
+      //"type": "cppvsdbg",          // ← для MSVC
+       "type": "cppdbg",         // ← для MinGW/GCC (раскомментируй эту, закомментируй cppvsdbg)
+      "request": "launch",
+      "program": "${workspaceFolder}/build/tests/json_test.exe",
+      "args": [
+        "--gtest_filter=JsonTest.ReadEmptyList",
+        "--gtest_break_on_failure"   // ← остановится при ASSERT/EXPECT провале
+      ],
+      "cwd": "${workspaceFolder}/build/tests",
+      "environment": [],
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "MIMode": "gdb",              // ← только для cppdbg + MinGW
+      "miDebuggerPath": "C:/mingw64/bin/gdb.exe",  // ← путь к gdb (если MinGW)
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "name": "Debug JsonTest.Write",
+      //"type": "cppvsdbg",          // ← для MSVC
+       "type": "cppdbg",         // ← для MinGW/GCC (раскомментируй эту, закомментируй cppvsdbg)
+      "request": "launch",
+      "program": "${workspaceFolder}/build/tests/json_test.exe",
+      "args": [
+        "--gtest_filter=JsonTest.Write",
+        "--gtest_break_on_failure"   // ← остановится при ASSERT/EXPECT провале
+      ],
+      "cwd": "${workspaceFolder}/build/tests",
+      "environment": [],
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "MIMode": "gdb",              // ← только для cppdbg + MinGW
+      "miDebuggerPath": "C:/mingw64/bin/gdb.exe",  // ← путь к gdb (если MinGW)
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}

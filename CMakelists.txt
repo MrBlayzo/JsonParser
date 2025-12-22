@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.14)
+project(json_parser LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_library(json STATIC src/json.cpp src/json.h)
+
+add_executable(main src/main.cpp)
+target_link_libraries(main PRIVATE json)
+
+option(BUILD_TESTS "Build tests" ON)
+
+if(BUILD_TESTS)
+    enable_testing()
+    # Собираем тесты
+    add_subdirectory(extern/googletest)
+    add_subdirectory(tests)
+    
+endif()

@@ -53,13 +53,13 @@
       ]
     },
     {
-      "name": "Debug JsonTest.Write",
+      "name": "Debug JsonTest.ReadUnicode",
       //"type": "cppvsdbg",          // ← для MSVC
        "type": "cppdbg",         // ← для MinGW/GCC (раскомментируй эту, закомментируй cppvsdbg)
       "request": "launch",
       "program": "${workspaceFolder}/build/tests/json_test.exe",
       "args": [
-        "--gtest_filter=JsonTest.Write",
+        "--gtest_filter=JsonTest.ReadUnicode",
         "--gtest_break_on_failure"   // ← остановится при ASSERT/EXPECT провале
       ],
       "cwd": "${workspaceFolder}/build/tests",

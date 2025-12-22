@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include "../src/json.h"
 
+using namespace std;
+
 class TestableJsonReader : public JsonReader
 {
 public:
@@ -70,11 +72,7 @@ TEST_F(JsonTest, Read)
                                    {"2", JsonValue(1.2)},
                                    {"3", JsonValue()},
                                    {"4", JsonValue("test_string")},
-                                   {"5", JsonValue(false)}
-                                }
-                                )}
-                                }
-                                );
+                                   {"5", JsonValue(false)}})}});
     EXPECT_EQ(parser.read("res/Test1.json"), output);
 }
 
@@ -82,18 +80,13 @@ TEST_F(JsonTest, Read2)
 {
     JsonValue output =
         JsonValue(
-            {
-                {"message", JsonValue("Hello, \"World\"!")},
-                {"nested", JsonValue(
-                    {
-                        {"a", JsonValue((int64_t)1)},
-                        {"b", JsonValue(
-                            vector<JsonValue>{JsonValue(true), JsonValue()}
-                        )},
-                    }
-                )}
-            }
-        );
+            {{"message", JsonValue("Hello, \"World\"!")},
+             {"nested", JsonValue(
+                            {
+                                {"a", JsonValue((int64_t)1)},
+                                {"b", JsonValue(
+                                          vector<JsonValue>{JsonValue(true), JsonValue()})},
+                            })}});
     EXPECT_EQ(parser.read("res/Test2.json"), output);
 }
 
@@ -112,11 +105,7 @@ TEST_F(JsonTest, Write)
                                    {"2", JsonValue(1.2)},
                                    {"3", JsonValue()},
                                    {"4", JsonValue("test_string")},
-                                   {"5", JsonValue(false)}
-                                }
-                                )}
-                                }
-                                );
+                                   {"5", JsonValue(false)}})}});
     EXPECT_NO_THROW(parser.write("res/TestWriteReal.json", output));
 
     string reference = parser._read("res/Test1.json");
@@ -130,8 +119,7 @@ TEST_F(JsonTest, Read3)
         JsonValue(
             {
                 map<string, JsonValue>{{"\"World\"", JsonValue("Hello, \"World\"!")}},
-            }
-        );
+            });
     EXPECT_EQ(parser.read("res/Test3.json"), output);
 }
 
@@ -148,4 +136,45 @@ TEST_F(JsonTest, ReadError3)
 TEST_F(JsonTest, ReadError4)
 {
     EXPECT_THROW(parser.read("res/TestError4.json"), JsonParseError);
+}
+
+TEST_F(JsonTest, ReadUnicode)
+{
+    JsonValue output =
+        JsonValue(
+            {
+                map<string, JsonValue>{{"1", JsonValue("$")}},
+            });
+    EXPECT_EQ(parser.read("res/TestUnicode.json"), output);
+}
+
+TEST_F(JsonTest, ReadUnicodeInvalidSurrogate)
+{
+    // Валидный результат — ошибка или замена на .
+    // Твоя реализация даёт некорректную строку.
+    EXPECT_THROW(parser.read("res/TestErrorUnicode3.json"), JsonParseError);
+}
+
+TEST_F(JsonTest, ReadErrorPlusNumber)
+{
+    EXPECT_THROW(parser.read("res/TestErrorNumber1.json"), JsonParseError);
+}
+
+TEST_F(JsonTest, ReadErrorLeadingZero)
+{
+    EXPECT_THROW(parser.read("res/TestErrorNumber2.json"), JsonParseError);
+}
+
+TEST_F(JsonTest, ReadUnicodeCyrillic)
+{
+    JsonValue expected("П");
+    JsonValue actual = parser.read("res/TestUnicode1.json");
+    EXPECT_EQ(actual, expected);  // ← упадёт: actual = "\x1F", expected = "\xD0\x9F"
+}
+
+TEST_F(JsonTest, ReadUnicodeEmoji)
+{
+    JsonValue expected("❤");
+    JsonValue actual = parser.read("res/TestUnicode2.json");
+    EXPECT_EQ(actual, expected);  // ← упадёт
 }

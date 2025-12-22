@@ -7,9 +7,9 @@ JsonValue JsonValue::from_string(StringParserPtr &ptr)
 {
     return JsonParser::from_string(ptr);
 }
-JsonValue JsonParser::from_string(StringParserPtr &ptr){
-    while (is_skip_char(ptr.get()))
-        ++ptr;
+JsonValue JsonParser::from_string(StringParserPtr &ptr)
+{
+    skip_whitespace(ptr);
     const char op = ptr.get();
     if (op == '[')
         return get_list(ptr);
@@ -21,91 +21,138 @@ JsonValue JsonParser::from_string(StringParserPtr &ptr){
         return get_other(ptr);
 };
 
-JsonValue JsonParser::get_list(StringParserPtr &ptr){
+JsonValue JsonParser::get_list(StringParserPtr &ptr)
+{
     vector<JsonValue> data;
     ++ptr;
     while (ptr.get() != ']')
     {
         data.push_back(from_string(ptr));
-        while (is_skip_char(ptr.get()))
+        skip_whitespace(ptr);
+        if (ptr.get() == ',')
+        {
             ++ptr;
+            continue;
+        }
+        else if (ptr.get() == ']')
+            continue;
+        else
+            throw JsonParseError();
     }
     ++ptr;
     return JsonValue(data);
 }
 
-JsonValue JsonParser::get_dict(StringParserPtr &ptr){
+JsonValue JsonParser::get_dict(StringParserPtr &ptr)
+{
     map<string, JsonValue> data;
     ++ptr;
     string name;
     JsonValue param;
-    while (ptr.get() != '}')
+    while (true)
     {
-        if (ptr.get() == ',')
+        skip_whitespace(ptr);
+        if (ptr.get() == '"')
         {
-            name.clear();
+            JsonValue json_name = get_str(ptr);
+            name = json_name.get<string>();
+            skip_whitespace(ptr);
+            if (ptr.get() != ':')
+                throw JsonParseError();
             ++ptr;
-        }
-        else if (ptr.get() == ':')
-        {
-            ++ptr;
+            skip_whitespace(ptr);
             param = from_string(ptr);
             data[name] = param;
+            skip_whitespace(ptr);
+            if (ptr.get() == ',')
+            {
+                ++ptr;
+                continue;
+            }
+            else if (ptr.get() == '}')
+                continue;
+            else
+                throw JsonParseError();
         }
-        else if (ptr.get() == '"')
+        else if (ptr.get() == '}')
         {
             ++ptr;
-            name = string(1, ptr.get());
-            ++ptr;
-            while (ptr.get() != '\"')
-            {
-                name += ptr.get();
-                ++ptr;
-            }
-            ++ptr;
+            return JsonValue(data);
         }
-        else if (!is_skip_char(ptr.get()))
-            throw JsonParseError();
         else
         {
-            ++ptr;
+            throw JsonParseError();
         }
     }
     ++ptr;
     return JsonValue(data);
 }
 
-JsonValue JsonParser::get_str(StringParserPtr &ptr){
-    ++ptr;  // пропускаем открывающую "
+JsonValue JsonParser::get_str(StringParserPtr &ptr)
+{
+    ++ptr; // пропускаем открывающую "
     string str;
-    while (true) {
+    while (true)
+    {
         char c = ptr.get();
-        if (c == '"') {
-            ++ptr;  // пропускаем закрывающую "
+        if (c == '"')
+        {
+            ++ptr; // пропускаем закрывающую "
             return JsonValue(std::move(str));
         }
-        if (c == '\\') {
-            ++ptr;  // пропускаем '\'
+        if (c == '\\')
+        {
+            ++ptr; // пропускаем '\'
             c = ptr.get();
-            switch (c) {
-                case '"':  c = '"';  break;
-                case '\\': c = '\\'; break;
-                case '/':  c = '/';  break;
-                case 'b':  c = '\b'; break;
-                case 'f':  c = '\f'; break;
-                case 'n':  c = '\n'; break;
-                case 'r':  c = '\r'; break;
-                case 't':  c = '\t'; break;
-                case 'u': {
-                    // Простой вариант: игнорируем \uXXXX (можно расширить позже)
-                    // Пропускаем 'u' + 4 hex-цифры
-                    for (int i = 0; i < 4; ++i) ++ptr;
-                    c = '?'; // заглушка — или реализуйте конвертацию Unicode
-                    break;
+            switch (c)
+            {
+            case '"':
+                c = '"';
+                break;
+            case '\\':
+                c = '\\';
+                break;
+            case '/':
+                c = '/';
+                break;
+            case 'b':
+                c = '\b';
+                break;
+            case 'f':
+                c = '\f';
+                break;
+            case 'n':
+                c = '\n';
+                break;
+            case 'r':
+                c = '\r';
+                break;
+            case 't':
+                c = '\t';
+                break;
+            case 'u':
+            {
+                // Простой вариант: игнорируем \uXXXX (можно расширить позже)
+                // Пропускаем 'u' + 4 hex-цифры
+                string hex_part = "";
+                for (int i = 0; i < 4; i++)
+                {
+                    ++ptr;
+                    hex_part += ptr.get();
                 }
-                default:
-                    // Нестандартный эскейп — оставляем как есть (или бросить ошибку)
-                    break;
+                if (hex_part.length() != 4)
+                    throw JsonParseError();
+                uint16_t code;
+                auto [ptr, ec] = std::from_chars(hex_part.data(), hex_part.data() + 4, code, 16);
+                if (ec != std::errc{})
+                    throw JsonParseError();
+
+                c = static_cast<char32_t>(code);
+                break;
+            }
+            default:
+                // Нестандартный эскейп — оставляем как есть (или бросить ошибку)
+                break;
             }
         }
         str += c;
@@ -113,7 +160,8 @@ JsonValue JsonParser::get_str(StringParserPtr &ptr){
     }
 }
 
-JsonValue JsonParser::get_other(StringParserPtr &ptr){
+JsonValue JsonParser::get_other(StringParserPtr &ptr)
+{
     string str = string(1, ptr.get());
     ++ptr;
     while (ptr.get() != ',' &&
@@ -139,15 +187,24 @@ JsonValue JsonParser::get_other(StringParserPtr &ptr){
         return JsonValue();
     }
     size_t pos = 0;
-    try {
-        if (str.find('.') != string::npos || str.find('e') != string::npos || str.find('E') != string::npos) {
+    try
+    {
+        if (str.find('.') != string::npos || str.find('e') != string::npos || str.find('E') != string::npos)
+        {
             double d = std::stod(str, &pos);
-            if (pos == str.size()) return JsonValue(d);
-        } else {
-            int64_t i = std::stoll(str, &pos);
-            if (pos == str.size()) return JsonValue(i);
+            if (pos == str.size())
+                return JsonValue(d);
         }
-    } catch (...) {}
+        else
+        {
+            int64_t i = std::stoll(str, &pos);
+            if (pos == str.size())
+                return JsonValue(i);
+        }
+    }
+    catch (...)
+    {
+    }
     throw JsonParseError();
 }
 

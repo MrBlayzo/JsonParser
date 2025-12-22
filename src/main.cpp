@@ -1,10 +1,9 @@
 #include <iostream>
+#include "json.h"
 
 using namespace std;
 
 int main()
 {
-    cout << "Helo world";
-
     return 0;
 }

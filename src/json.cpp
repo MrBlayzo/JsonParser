@@ -142,13 +142,33 @@ JsonValue JsonParser::get_str(StringParserPtr &ptr)
                 }
                 if (hex_part.length() != 4)
                     throw JsonParseError();
-                uint16_t code;
-                auto [ptr, ec] = std::from_chars(hex_part.data(), hex_part.data() + 4, code, 16);
+                uint32_t code;
+                auto [_ptr, ec] = std::from_chars(hex_part.data(), hex_part.data() + 4, code, 16);
                 if (ec != std::errc{})
                     throw JsonParseError();
 
-                c = static_cast<char32_t>(code);
-                break;
+                auto append_utf8 = [&](uint32_t cp) {
+                    if (cp <= 0x7F) {
+                        str += static_cast<char>(cp);
+                    } else if (cp <= 0x7FF) {
+                        str += static_cast<char>(0xC0 | (cp >> 6));
+                        str += static_cast<char>(0x80 | (cp & 0x3F));
+                    } else if (cp <= 0xFFFF) {
+                        str += static_cast<char>(0xE0 | (cp >> 12));
+                        str += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+                        str += static_cast<char>(0x80 | (cp & 0x3F));
+                    } else if (cp <= 0x10FFFF) {
+                        str += static_cast<char>(0xF0 | (cp >> 18));
+                        str += static_cast<char>(0x80 | ((cp >> 12) & 0x3F));
+                        str += static_cast<char>(0x80 | ((cp >> 6) & 0x3F));
+                        str += static_cast<char>(0x80 | (cp & 0x3F));
+                    } else {
+                        throw JsonParseError(); // invalid code point
+                    }
+                };
+                append_utf8(code);
+                ++ptr;
+                continue;
             }
             default:
                 // Нестандартный эскейп — оставляем как есть (или бросить ошибку)

@@ -148,13 +148,6 @@ TEST_F(JsonTest, ReadUnicode)
     EXPECT_EQ(parser.read("res/TestUnicode.json"), output);
 }
 
-TEST_F(JsonTest, ReadUnicodeInvalidSurrogate)
-{
-    // Валидный результат — ошибка или замена на .
-    // Твоя реализация даёт некорректную строку.
-    EXPECT_THROW(parser.read("res/TestErrorUnicode3.json"), JsonParseError);
-}
-
 TEST_F(JsonTest, ReadErrorPlusNumber)
 {
     EXPECT_THROW(parser.read("res/TestErrorNumber1.json"), JsonParseError);

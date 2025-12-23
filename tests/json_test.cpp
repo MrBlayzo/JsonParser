@@ -68,7 +68,7 @@ TEST_F(JsonTest, Read)
     JsonValue output =
         JsonValue(
             {{"args", JsonValue({"1", "2", "3", "4"})},
-             {"rwargs", JsonValue({{"1", JsonValue((int64_t)1)},
+             {"rwargs", JsonValue({{"1", JsonValue(1)},
                                    {"2", JsonValue(1.2)},
                                    {"3", JsonValue()},
                                    {"4", JsonValue("test_string")},
@@ -83,7 +83,7 @@ TEST_F(JsonTest, Read2)
             {{"message", JsonValue("Hello, \"World\"!")},
              {"nested", JsonValue(
                             {
-                                {"a", JsonValue((int64_t)1)},
+                                {"a", JsonValue(1)},
                                 {"b", JsonValue(
                                           vector<JsonValue>{JsonValue(true), JsonValue()})},
                             })}});
@@ -101,7 +101,7 @@ TEST_F(JsonTest, Write)
     JsonValue output =
         JsonValue(
             {{"args", JsonValue({"1", "2", "3", "4"})},
-             {"rwargs", JsonValue({{"1", JsonValue((int64_t)1)},
+             {"rwargs", JsonValue({{"1", JsonValue(1)},
                                    {"2", JsonValue(1.2)},
                                    {"3", JsonValue()},
                                    {"4", JsonValue("test_string")},

@@ -21,6 +21,11 @@ JsonValue JsonParser::from_string(StringParserPtr &ptr)
         return get_other(ptr);
 };
 
+JsonValue JsonValue::from_string(const std::string str){
+    StringParserPtr ptr{std::move(str)};
+    return from_string(ptr);
+}
+
 JsonValue JsonParser::get_list(StringParserPtr &ptr)
 {
     vector<JsonValue> data;
@@ -309,10 +314,9 @@ void JsonReader::_write(const string &file_path, const string &data)
 JsonValue JsonReader::read(const string &file_path)
 {
     string data = _read(file_path);
-    StringParserPtr ptr{std::move(data)};
     try
     {
-        return JsonValue::from_string(ptr);
+        return JsonValue::from_string(std::move(data));
     }
     catch (const PtrOutOfBounds &error)
     {

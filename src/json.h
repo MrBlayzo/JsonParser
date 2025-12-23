@@ -118,6 +118,7 @@ struct JsonValue
         return std::get<T>(value);
     };
     static JsonValue from_string(StringParserPtr &ptr);
+    static JsonValue from_string(const std::string str);
     std::string to_string(const bool &new_line = false, const std::string tabs = "") const;
 
     bool is_null() const

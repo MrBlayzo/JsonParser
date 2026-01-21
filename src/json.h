@@ -27,17 +27,16 @@ public:
 class StringParserPtr
 {
 private:
+    const std::string data;
     const char *cur;
     const char *end;
-    const std::string data;
 
 public:
     StringParserPtr(const std::string str)
-        : data(std::move(str))
-    {
-        cur = data.data();
-        end = data.data() + data.size();
-    }
+        : data(std::move(str)), 
+        cur(data.data()),
+        end(data.data() + data.size())
+    {}
     // префиксные операторы
     StringParserPtr &operator++()
     {
